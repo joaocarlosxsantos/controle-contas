@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Family {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  bills     Bill[]
+  members   Member[]
+}
+
+model Member {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String
+  family    Family   @relation(fields: [familyId], references: [id])
+  familyId  Int
+  createdAt DateTime @default(now())
+}
+
+model Bill {
+  id        Int      @id @default(autoincrement())
+  name      String
+  value     Float
+  family    Family   @relation(fields: [familyId], references: [id])
+  familyId  Int
+  createdAt DateTime @default(now())
+}
