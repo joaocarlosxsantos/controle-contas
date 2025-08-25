@@ -16,7 +16,6 @@ export default function FamiliesPage() {
 
   useEffect(() => {
     fetchFamilies();
-    // eslint-disable-next-line
   }, []);
 
   async function fetchFamilies() {
