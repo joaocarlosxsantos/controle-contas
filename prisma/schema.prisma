@@ -22,6 +22,7 @@ model Member {
   group     Group   @relation(fields: [groupId], references: [id])
   groupId   Int
   createdAt DateTime @default(now())
+  shares    BillMemberShare[]
 }
 
 model Bill {
@@ -30,5 +31,17 @@ model Bill {
   value     Float
   group     Group   @relation(fields: [groupId], references: [id])
   groupId   Int
+  createdAt DateTime @default(now())
+  shares    BillMemberShare[]
+}
+
+model BillMemberShare {
+  id        Int    @id @default(autoincrement())
+  bill      Bill   @relation(fields: [billId], references: [id])
+  billId    Int
+  member    Member @relation(fields: [memberId], references: [id])
+  memberId  Int
+  type      String // "value" | "percent"
+  amount    Float  // valor ou porcentagem, conforme type
   createdAt DateTime @default(now())
 }

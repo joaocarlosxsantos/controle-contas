@@ -1,4 +1,4 @@
-"use client";
+import { Modal } from "./Modal";
 import { useEffect, useState } from "react";
 function maskPhone(phone: string) {
   // Máscara para (99) 99999-9999 ou (99) 9999-9999
@@ -24,6 +24,9 @@ interface MembersListProps {
 }
 
 export function MembersList({ groupId, showForm = true, compact = false }: MembersListProps) {
+  // Estado para modal de confirmação de exclusão
+  const [confirmDelete, setConfirmDelete] = useState<{ member: Member | null, hasLinks: boolean }>({ member: null, hasLinks: false });
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -74,10 +77,17 @@ export function MembersList({ groupId, showForm = true, compact = false }: Membe
     setLoading(true);
     setError("");
     try {
-      await fetch(`/api/members?memberId=${id}`, { method: "DELETE" });
-      fetchMembers();
+      // Verifica se há vínculos antes de excluir
+      const res = await fetch(`/api/members/has-links?memberId=${id}`);
+      const data = await res.json();
+      const member = members.find(m => m.id === id) || null;
+      if (data.hasLinks) {
+        setConfirmDelete({ member, hasLinks: true });
+      } else {
+        setConfirmDelete({ member, hasLinks: false });
+      }
     } catch {
-      setError("Erro ao remover membro");
+      setError("Erro ao verificar vínculos do membro");
     } finally {
       setLoading(false);
     }
@@ -85,6 +95,67 @@ export function MembersList({ groupId, showForm = true, compact = false }: Membe
 
   return (
     <div className="mt-2">
+      {/* Modal de confirmação de exclusão */}
+      <Modal open={!!confirmDelete.member} onClose={() => setConfirmDelete({ member: null, hasLinks: false })} title="Remover membro">
+        {confirmDelete.member && confirmDelete.hasLinks ? (
+          <>
+            <div className="mb-4 text-red-700 dark:text-red-300 font-semibold">
+              O membro <b>{confirmDelete.member.name}</b> possui contas vinculadas.<br />
+              O que deseja fazer?
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                className="rounded bg-red-600 px-4 py-2 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
+                disabled={deleteLoading}
+                onClick={async () => {
+                  setDeleteLoading(true);
+                  setError("");
+                  try {
+                    await fetch(`/api/members?memberId=${confirmDelete.member?.id}&force=1`, { method: "DELETE" });
+                    setConfirmDelete({ member: null, hasLinks: false });
+                    fetchMembers();
+                  } catch {
+                    setError("Erro ao remover membro e vínculos");
+                  } finally {
+                    setDeleteLoading(false);
+                  }
+                }}
+              >Excluir membro e todos os vínculos</button>
+              <button
+                className="rounded bg-neutral-200 dark:bg-neutral-800 px-4 py-2 text-neutral-800 dark:text-neutral-200 font-semibold"
+                onClick={() => setConfirmDelete({ member: null, hasLinks: false })}
+              >Cancelar</button>
+            </div>
+          </>
+        ) : confirmDelete.member ? (
+          <>
+            <div className="mb-4">Deseja realmente remover <b>{confirmDelete.member.name}</b>?</div>
+            <div className="flex gap-2 justify-end">
+              <button
+                className="rounded bg-red-600 px-4 py-2 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
+                disabled={deleteLoading}
+                onClick={async () => {
+                  setDeleteLoading(true);
+                  setError("");
+                  try {
+                    await fetch(`/api/members?memberId=${confirmDelete.member?.id}`, { method: "DELETE" });
+                    setConfirmDelete({ member: null, hasLinks: false });
+                    fetchMembers();
+                  } catch {
+                    setError("Erro ao remover membro");
+                  } finally {
+                    setDeleteLoading(false);
+                  }
+                }}
+              >Remover</button>
+              <button
+                className="rounded bg-neutral-200 dark:bg-neutral-800 px-4 py-2 text-neutral-800 dark:text-neutral-200 font-semibold"
+                onClick={() => setConfirmDelete({ member: null, hasLinks: false })}
+              >Cancelar</button>
+            </div>
+          </>
+        ) : null}
+      </Modal>
       {!compact && <h4 className="font-semibold mb-2 text-neutral-900 dark:text-neutral-100">Membros do grupo</h4>}
       {loading && <p className="text-blue-600 dark:text-blue-400">Carregando...</p>}
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
