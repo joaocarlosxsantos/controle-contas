@@ -3,15 +3,15 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// GET /api/members?familyId=1
+// GET /api/members?groupId=1
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const familyId = searchParams.get('familyId');
-  if (!familyId) {
-    return NextResponse.json({ error: 'familyId é obrigatório' }, { status: 400 });
+  const groupId = searchParams.get('groupId');
+  if (!groupId) {
+    return NextResponse.json({ error: 'groupId é obrigatório' }, { status: 400 });
   }
   const members = await prisma.member.findMany({
-    where: { familyId: Number(familyId) },
+    where: { groupId: Number(groupId) },
     orderBy: { createdAt: 'desc' },
   });
   return NextResponse.json(members);
@@ -20,12 +20,12 @@ export async function GET(req: NextRequest) {
 // POST /api/members
 export async function POST(req: NextRequest) {
   const data = await req.json();
-  const { familyId, name, phone } = data;
-  if (!familyId || !name || !phone) {
-    return NextResponse.json({ error: 'Campos obrigatórios: familyId, name, phone' }, { status: 400 });
+  const { groupId, name, phone } = data;
+  if (!groupId || !name || !phone) {
+    return NextResponse.json({ error: 'Campos obrigatórios: groupId, name, phone' }, { status: 400 });
   }
   const member = await prisma.member.create({
-    data: { familyId: Number(familyId), name, phone },
+    data: { groupId: Number(groupId), name, phone },
   });
   return NextResponse.json(member, { status: 201 });
 }

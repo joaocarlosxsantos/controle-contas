@@ -5,13 +5,13 @@ const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const familyId = searchParams.get('familyId');
-  if (!familyId) {
-    return NextResponse.json({ error: 'familyId é obrigatório' }, { status: 400 });
+  const groupId = searchParams.get('groupId');
+  if (!groupId) {
+    return NextResponse.json({ error: 'groupId é obrigatório' }, { status: 400 });
   }
-  const bills = await prisma.bill.findMany({ where: { familyId: Number(familyId) } });
+  const bills = await prisma.bill.findMany({ where: { groupId: Number(groupId) } });
   if (!bills.length) {
-    return NextResponse.json({ error: 'Nenhuma conta encontrada para esta família.' }, { status: 404 });
+    return NextResponse.json({ error: 'Nenhuma conta encontrada para este grupo.' }, { status: 404 });
   }
   const csv = [
     'Nome,Valor',
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(csv, {
     headers: {
       'Content-Type': 'text/csv',
-      'Content-Disposition': `attachment; filename=divisao-contas-familia-${familyId}.csv`
+      'Content-Disposition': `attachment; filename=divisao-contas-grupo-${groupId}.csv`
     }
   });
 }

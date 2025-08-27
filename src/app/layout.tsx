@@ -1,46 +1,50 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-
+import React from "react";
 import "./globals.css";
-import { ThemeSwitch } from "../components/ThemeSwitch";
+import { NavMenu } from "@/components/NavMenu";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
+export const metadata = {
   title: "Controle de Contas",
-  description: "Aplicação web para divisão de contas domésticas entre membros da família.",
+  description: "Gerencie grupos, membros e contas de forma simples.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-br" suppressHydrationWarning>
-      <head>
-        <link rel="icon" type="image/svg+xml" href="/controle-contas-favicon.svg" />
-        <title>Controle de Contas</title>
-      </head>
-      <body
-        className={`min-h-screen bg-background text-foreground antialiased transition-colors ${geistSans.variable} ${geistMono.variable}`}
-      >
-        <nav className="flex items-center gap-4 bg-blue-600 px-4 py-3 text-white dark:bg-neutral-900">
-          <a href="/families" className="hover:underline">Famílias</a>
-          <a href="/bills" className="hover:underline">Contas</a>
-          <div className="ml-auto">
-            <ThemeSwitch />
+      <body className="min-h-screen bg-background text-foreground transition-colors">
+        {/* Script para evitar flash de tema (FART) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+        <header className="w-full border-b border-border bg-background/80 backdrop-blur sticky top-0 z-30 shadow-sm">
+          <div className="container mx-auto flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3 px-4">
+            <div className="flex flex-1 items-center justify-center sm:justify-start">
+              <h1 className="text-2xl font-extrabold tracking-tight text-blue-700 dark:text-blue-300 drop-shadow-sm select-none">Controle de Contas</h1>
+            </div>
+            <div className="flex flex-1 items-center justify-center sm:justify-center mt-2 sm:mt-0">
+              <NavMenu />
+            </div>
+            <div className="flex flex-1 items-center justify-center sm:justify-end mt-2 sm:mt-0">
+              <ThemeSwitch />
+            </div>
           </div>
-        </nav>
-        <main className="container mx-auto px-4 py-8">{children}</main>
+        </header>
+        <main className="container mx-auto px-4 py-8 flex-1 flex flex-col gap-8">
+          {children}
+        </main>
       </body>
     </html>
   );

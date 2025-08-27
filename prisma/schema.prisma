@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Family {
+model Group {
   id        Int      @id @default(autoincrement())
   name      String
   createdAt DateTime @default(now())
@@ -19,8 +19,8 @@ model Member {
   id        Int      @id @default(autoincrement())
   name      String
   phone     String
-  family    Family   @relation(fields: [familyId], references: [id])
-  familyId  Int
+  group     Group   @relation(fields: [groupId], references: [id])
+  groupId   Int
   createdAt DateTime @default(now())
 }
 
@@ -28,7 +28,7 @@ model Bill {
   id        Int      @id @default(autoincrement())
   name      String
   value     Float
-  family    Family   @relation(fields: [familyId], references: [id])
-  familyId  Int
+  group     Group   @relation(fields: [groupId], references: [id])
+  groupId   Int
   createdAt DateTime @default(now())
 }

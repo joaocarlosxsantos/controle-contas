@@ -1,0 +1,1 @@
+-- Obsolete (rename merged into initial schema). No-op.
