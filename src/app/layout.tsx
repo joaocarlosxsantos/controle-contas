@@ -6,6 +6,10 @@ import { ThemeSwitch } from "@/components/ThemeSwitch";
 export const metadata = {
   title: "Controle de Contas",
   description: "Gerencie grupos, membros e contas de forma simples.",
+  icons: {
+    icon: '/controle-contas-favicon.svg',
+    shortcut: '/controle-contas-favicon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
