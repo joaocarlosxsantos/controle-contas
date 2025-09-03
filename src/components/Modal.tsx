@@ -21,13 +21,22 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
     function handleEsc(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
+    let previousActive: Element | null = null;
     if (open) {
+      previousActive = document.activeElement;
       document.addEventListener("keydown", handleEsc);
       document.body.style.overflow = "hidden";
     }
     return () => {
       document.removeEventListener("keydown", handleEsc);
       document.body.style.overflow = "";
+      try {
+        if (previousActive && (previousActive as HTMLElement).focus) {
+          (previousActive as HTMLElement).focus();
+        }
+      } catch {
+        // ignore
+      }
     };
   }, [open, onClose]);
 

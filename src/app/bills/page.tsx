@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useToast } from "@/components/Toast";
 import { BillCard } from "../../components/Cards";
 import { Modal } from "../../components/Modal";
@@ -61,10 +61,10 @@ export default function BillsPage() {
       } else {
         setEditSelectedMembers(membrosIncluidos);
       }
-      // Preenche os valores/porcentagens conforme banco
-      setEditShares(
-        bill.shares.map((s) => ({ memberId: s.memberId, amount: s.amount }))
-      );
+        // Preenche os valores/porcentagens conforme banco (armazenar como string)
+        setEditShares(
+          bill.shares.map((s) => ({ memberId: s.memberId, amount: String(s.amount) }))
+        );
     } else {
       setEditShareType("value");
       setEditSelectedMembers([]);
@@ -87,7 +87,7 @@ export default function BillsPage() {
   );
   const [editSelectedMembers, setEditSelectedMembers] = useState<number[]>([]);
   const [editShares, setEditShares] = useState<
-    { memberId: number; amount: number }[]
+    { memberId: number; amount: string }[]
   >([]);
 
   // (deixe o useEffect de edição APÓS a declaração dos hooks de estado editValue e members)
@@ -98,14 +98,17 @@ export default function BillsPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
+  const valueRef = useRef<HTMLInputElement | null>(null);
   // Estado para divisão personalizada
   const [shareType, setShareType] = useState<"value" | "percent">("value");
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]); // vazio = todos
-  const [shares, setShares] = useState<{ memberId: number; amount: number }[]>(
+  // armazenamos amount como string para preservar o estado parcial do input enquanto o usuário digita
+  const [shares, setShares] = useState<{ memberId: number; amount: string }[]>(
     []
   );
   const [editName, setEditName] = useState("");
   const [editValue, setEditValue] = useState("");
+  const editValueRef = useRef<HTMLInputElement | null>(null);
   // Estado para modal de erro de validação
   const [validationError, setValidationError] = useState("");
   const toast = useToast();
@@ -143,7 +146,7 @@ export default function BillsPage() {
     type: "value" | "percent",
     value: string,
     members: number[]
-  ): { memberId: number; amount: number }[] {
+  ): { memberId: number; amount: string }[] {
     if (!members.length) return [];
     if (type === "value") {
       const v = parseFloat(value) || 0;
@@ -151,14 +154,14 @@ export default function BillsPage() {
       const rest = v - base * members.length;
       return members.map((id, i) => ({
         memberId: id,
-        amount: base + (i === 0 ? rest : 0),
+        amount: (base + (i === 0 ? rest : 0)).toFixed(2),
       }));
     } else {
       const base = Math.floor((100 / members.length) * 100) / 100;
       const rest = 100 - base * members.length;
       return members.map((id, i) => ({
         memberId: id,
-        amount: base + (i === 0 ? rest : 0),
+        amount: (base + (i === 0 ? rest : 0)).toFixed(1),
       }));
     }
   }
@@ -167,13 +170,8 @@ export default function BillsPage() {
   function handleOpenAddModal() {
     setAddModalOpen(true);
     setSelectedMembers([]); // todos
-    setShares(
-      getEqualShares(
-        shareType,
-        value,
-        members.map((m) => m.id)
-      )
-    );
+  // preenche shares com base no valor atual
+  setShares(getEqualShares(shareType, value, members.map((m) => m.id)));
   }
 
   // Atualiza shares ao mudar participantes, valor ou tipo
@@ -183,6 +181,8 @@ export default function BillsPage() {
     setShares(getEqualShares(shareType, value, ids));
     // eslint-disable-next-line
   }, [selectedMembers, value, shareType, members.length]);
+
+  // ...removed debounce approach; add-modal will update `value` on blur
   // antigo deleteModalOpen removido: usamos confirmação aninhada no modal de edição
   const [confirmDeleteBill, setConfirmDeleteBill] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -265,7 +265,9 @@ export default function BillsPage() {
       selectedMembers.length === 0 ? members.map((m) => m.id) : selectedMembers;
     if (shareType === "value") {
       const soma = ids.reduce(
-        (acc, id) => acc + (shares.find((s) => s.memberId === id)?.amount ?? 0),
+        (acc, id) =>
+          acc +
+          (parseFloat(shares.find((s) => s.memberId === id)?.amount ?? "0") || 0),
         0
       );
       const total = parseFloat(value) || 0;
@@ -278,7 +280,9 @@ export default function BillsPage() {
       }
     } else {
       const soma = ids.reduce(
-        (acc, id) => acc + (shares.find((s) => s.memberId === id)?.amount ?? 0),
+        (acc, id) =>
+          acc +
+          (parseFloat(shares.find((s) => s.memberId === id)?.amount ?? "0") || 0),
         0
       );
       if (Math.abs(soma - 100) > 0.01) {
@@ -299,7 +303,9 @@ export default function BillsPage() {
       const sharesPayload = allIds.map((memberId) => ({
         memberId,
         type: shareType,
-        amount: shares.find((s) => s.memberId === memberId)?.amount ?? 0,
+        amount: parseFloat(
+          shares.find((s) => s.memberId === memberId)?.amount ?? "0"
+        ),
       }));
       const res = await fetch("/api/bills", {
         method: "POST",
@@ -483,12 +489,14 @@ export default function BillsPage() {
                     editSelectedMembers.length === 0
                       ? members.map((m) => m.id)
                       : editSelectedMembers;
-                  if (editShareType === "value") {
+                    if (editShareType === "value") {
                     const soma = ids.reduce(
                       (acc, id) =>
                         acc +
-                        (editShares.find((s) => s.memberId === id)?.amount ??
-                          0),
+                        (parseFloat(
+                          editShares.find((s) => s.memberId === id)?.amount ??
+                            "0"
+                        ) || 0),
                       0
                     );
                     const total = parseFloat(editValue) || 0;
@@ -503,8 +511,10 @@ export default function BillsPage() {
                     const soma = ids.reduce(
                       (acc, id) =>
                         acc +
-                        (editShares.find((s) => s.memberId === id)?.amount ??
-                          0),
+                        (parseFloat(
+                          editShares.find((s) => s.memberId === id)?.amount ??
+                            "0"
+                        ) || 0),
                       0
                     );
                     if (Math.abs(soma - 100) > 0.01) {
@@ -524,9 +534,10 @@ export default function BillsPage() {
                     const sharesPayload = allIds.map((memberId) => ({
                       memberId,
                       type: editShareType,
-                      amount:
+                      amount: parseFloat(
                         editShares.find((s) => s.memberId === memberId)
-                          ?.amount ?? 0,
+                          ?.amount ?? "0"
+                      ),
                     }));
                     const res = await fetch(`/api/bills`, {
                       method: "PUT",
@@ -558,9 +569,19 @@ export default function BillsPage() {
                   placeholder="Nome da conta"
                 />
                 <input
-                  type="number"
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
+                  type="text"
+                  inputMode="decimal"
+                  defaultValue={editValue}
+                  ref={editValueRef}
+                  onBlur={() => {
+                    const v = editValueRef.current?.value ?? "";
+                    setEditValue(v);
+                    const ids =
+                      editSelectedMembers.length === 0
+                        ? members.map((m) => m.id)
+                        : editSelectedMembers;
+                    setEditShares(getEqualShares(editShareType, v, ids));
+                  }}
                   required
                   step="0.01"
                   className="rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-neutral-900 dark:text-neutral-100"
@@ -668,9 +689,9 @@ export default function BillsPage() {
                                 editShareType === "percent" ? "0" : undefined
                               }
                               step="0.01"
-                              value={share?.amount ?? 0}
+                              value={share?.amount ?? ""}
                               onChange={(e) => {
-                                const val = parseFloat(e.target.value) || 0;
+                                const val = e.target.value;
                                 setEditShares((prev) =>
                                   prev.map((s) =>
                                     s.memberId === memberId
@@ -688,7 +709,7 @@ export default function BillsPage() {
                               <span className="text-sm text-neutral-500">
                                 (
                                 {(
-                                  ((share?.amount ?? 0) /
+                                  ((parseFloat(share?.amount ?? "0") || 0) /
                                     parseFloat(editValue)) *
                                   100
                                 ).toFixed(1)}
@@ -699,7 +720,7 @@ export default function BillsPage() {
                               <span className="text-sm text-neutral-500">
                                 (R${" "}
                                 {(
-                                  ((share?.amount ?? 0) *
+                                  ((parseFloat(share?.amount ?? "0") || 0) *
                                     parseFloat(editValue)) /
                                   100
                                 ).toFixed(2)}
@@ -721,7 +742,7 @@ export default function BillsPage() {
                                   ? members.map((m) => m.id)
                                   : editSelectedMembers
                                 ).includes(s.memberId)
-                                  ? s.amount
+                                  ? (parseFloat(s.amount || "0") || 0)
                                   : 0),
                               0
                             )
@@ -734,7 +755,7 @@ export default function BillsPage() {
                                   ? members.map((m) => m.id)
                                   : editSelectedMembers
                                 ).includes(s.memberId)
-                                  ? s.amount
+                                  ? (parseFloat(s.amount || "0") || 0)
                                   : 0),
                               0
                             )
@@ -865,7 +886,7 @@ export default function BillsPage() {
                             className="ml-auto inline-flex items-center rounded px-2 py-1 bg-green-600 text-white text-sm hover:bg-green-700"
                             href={`https://wa.me/${formatPhoneForWhatsapp(member.phone)}?text=${encodeURIComponent((() => {
                               const lines: string[] = [];
-                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do grupo ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
+                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do(a) ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
                               bills.forEach(b => {
                                 let memberVal = 0;
                                 if (b.shares && b.shares.length > 0) {
@@ -876,7 +897,7 @@ export default function BillsPage() {
                                 } else {
                                   memberVal = b.value / Math.max(members.length, 1);
                                 }
-                                if (memberVal > 0) lines.push(`${b.name}: R$ ${memberVal.toFixed(2)}`);
+                                if (memberVal > 0) lines.push(`- ${b.name}: R$ ${memberVal.toFixed(2)}`);
                               });
                               const totalStr = bills.reduce((acc, b) => {
                                 let mv = 0;
@@ -904,7 +925,7 @@ export default function BillsPage() {
                           <button
                             onClick={async () => {
                               const lines: string[] = [];
-                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do grupo ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
+                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do(a) ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
                               bills.forEach(b => {
                                 let memberVal = 0;
                                 if (b.shares && b.shares.length > 0) {
@@ -913,7 +934,7 @@ export default function BillsPage() {
                                 } else {
                                   memberVal = b.value / Math.max(members.length, 1);
                                 }
-                                if (memberVal > 0) lines.push(`${b.name}: R$ ${memberVal.toFixed(2)}`);
+                                if (memberVal > 0) lines.push(`- ${b.name}: R$ ${memberVal.toFixed(2)}`);
                               });
                               const totalStr = bills.reduce((acc, b) => {
                                 let mv = 0;
@@ -999,15 +1020,26 @@ export default function BillsPage() {
                 required
                 className="rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600"
               />
-              <input
-                type="number"
-                placeholder="Valor"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                required
-                step="0.01"
-                className="rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600"
-              />
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Valor"
+                  defaultValue={value}
+                  ref={valueRef}
+                  onBlur={() => {
+                    const v = valueRef.current?.value ?? "";
+                    setValue(v);
+                    // recalc shares based on the finalized value
+                    const ids =
+                      selectedMembers.length === 0
+                        ? members.map((m) => m.id)
+                        : selectedMembers;
+                    setShares(getEqualShares(shareType, v, ids));
+                  }}
+                  required
+                  step="0.01"
+                  className="rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600"
+                />
               <div>
                 <label className="block font-semibold mb-1">
                   Participantes:
@@ -1103,9 +1135,9 @@ export default function BillsPage() {
                             type="number"
                             min={shareType === "percent" ? "0" : undefined}
                             step="0.01"
-                            value={share?.amount ?? 0}
+                            value={share?.amount ?? ""}
                             onChange={(e) => {
-                              const val = parseFloat(e.target.value) || 0;
+                              const val = e.target.value;
                               setShares((prev) =>
                                 prev.map((s) =>
                                   s.memberId === memberId
@@ -1121,7 +1153,7 @@ export default function BillsPage() {
                             <span className="text-sm text-neutral-500">
                               (
                               {(
-                                ((share?.amount ?? 0) / parseFloat(value)) *
+                                ((parseFloat(share?.amount ?? "0") || 0) / parseFloat(value)) *
                                 100
                               ).toFixed(1)}
                               %)
@@ -1131,7 +1163,7 @@ export default function BillsPage() {
                             <span className="text-sm text-neutral-500">
                               (R${" "}
                               {(
-                                ((share?.amount ?? 0) * parseFloat(value)) /
+                                ((parseFloat(share?.amount ?? "0") || 0) * parseFloat(value)) /
                                 100
                               ).toFixed(2)}
                               )
@@ -1153,7 +1185,7 @@ export default function BillsPage() {
                                 ? members.map((m) => m.id)
                                 : selectedMembers
                               ).includes(s.memberId)
-                                ? s.amount
+                                ? (parseFloat(s.amount || "0") || 0)
                                 : 0),
                             0
                           )
@@ -1166,7 +1198,7 @@ export default function BillsPage() {
                                 ? members.map((m) => m.id)
                                 : selectedMembers
                               ).includes(s.memberId)
-                                ? s.amount
+                                ? (parseFloat(s.amount || "0") || 0)
                                 : 0),
                             0
                           )

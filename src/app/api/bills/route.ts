@@ -137,6 +137,18 @@ export async function DELETE(req: NextRequest) {
   if (!billId) {
     return NextResponse.json({ error: 'billId é obrigatório' }, { status: 400 });
   }
+  // Primeiro remover as divisões relacionadas para evitar violação de FK
+  try {
+  const before = await prisma.billMemberShare.count({ where: { billId: Number(billId) } });
+  console.log(`Bill ${billId} - shares before delete: ${before}`);
+  const deleted = await prisma.billMemberShare.deleteMany({ where: { billId: Number(billId) } });
+  console.log(`Bill ${billId} - shares deleted: ${deleted.count}`);
+  const after = await prisma.billMemberShare.count({ where: { billId: Number(billId) } });
+  console.log(`Bill ${billId} - shares after delete: ${after}`);
   await prisma.bill.delete({ where: { id: Number(billId) } });
+  } catch (error) {
+    console.error('Erro ao deletar conta e/ou divisões:', error);
+    return NextResponse.json({ error: 'Erro ao deletar conta' }, { status: 500 });
+  }
   return NextResponse.json({ success: true });
 }

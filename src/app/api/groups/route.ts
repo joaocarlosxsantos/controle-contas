@@ -30,3 +30,16 @@ export async function DELETE(req: NextRequest) {
   await prisma.group.delete({ where: { id: Number(groupId) } });
   return NextResponse.json({ success: true });
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const data = await req.json();
+    const { id, name } = data;
+    if (!id) return NextResponse.json({ error: 'id é obrigatório' }, { status: 400 });
+    if (!name) return NextResponse.json({ error: 'name é obrigatório' }, { status: 400 });
+    const group = await prisma.group.update({ where: { id: Number(id) }, data: { name } });
+    return NextResponse.json(group);
+  } catch {
+    return NextResponse.json({ error: 'Erro ao atualizar grupo' }, { status: 500 });
+  }
+}
