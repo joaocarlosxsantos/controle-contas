@@ -34,11 +34,9 @@ export function Modal({ open, onClose, title, children, actions, size = "md" }: 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div
-        className={`relative w-full ${sizeClass[size]} animate-in fade-in zoom-in rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900`}
-      >
+      <div className={`relative w-full ${sizeClass[size]} animate-in fade-in zoom-in rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900 max-h-[90vh] overflow-auto`}>
         <div className="flex items-start gap-4 p-5 pb-3">
           {title && <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 flex-1">{title}</h3>}
           <button

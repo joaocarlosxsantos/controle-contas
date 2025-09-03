@@ -1,6 +1,7 @@
 :root {
-  --background: #ffffff;
+  --background: #f7fafc; /* tom levemente cinza no modo claro */
   --foreground: #171717;
+  --card-shadow: 0 6px 18px rgba(55,65,81,0.06); /* sombra cinza suave */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,17 +14,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root {
-  --background: #ffffff;
+/* fallback / ensure variables when html has class 'dark' (script sets this) */
+html.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/* Força tema claro quando a classe dark NÃO está presente (ignora preferência do sistema) */
+html:not(.dark) {
+  --background: #f7fafc;
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Utility classes mapping to CSS variables so Tailwind-like classes work */
+.bg-background { background-color: var(--background) !important; }
+.text-foreground { color: var(--foreground) !important; }
 
 html,
 body {
@@ -37,6 +42,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.card-shadow {
+  box-shadow: var(--card-shadow);
 }
 
 * {

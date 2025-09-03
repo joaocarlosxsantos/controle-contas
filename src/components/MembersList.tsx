@@ -163,8 +163,8 @@ export function MembersList({ groupId, showForm = true, compact = false }: Membe
         <div className="flex flex-wrap gap-2">
           {members.length === 0 && <span className="text-xs text-neutral-500 dark:text-neutral-400">Nenhum membro cadastrado.</span>}
           {members.map(m => (
-            <span key={m.id} className="inline-flex flex-col rounded-full bg-blue-100 dark:bg-blue-800 px-3 py-2 text-sm font-semibold text-blue-800 dark:text-blue-100 min-w-[110px]">
-              <span className="leading-tight text-base md:text-lg">{m.name}</span>
+            <span key={m.id} className="inline-flex flex-col rounded-full bg-blue-100 dark:bg-blue-800 px-3 py-2 text-sm font-semibold text-blue-800 dark:text-blue-100 min-w-[90px] md:min-w-[110px]">
+              <span className="leading-tight text-sm md:text-base truncate">{m.name}</span>
               <span className="text-xs md:text-base text-neutral-500 dark:text-neutral-300 leading-tight">{maskPhone(m.phone)}</span>
             </span>
           ))}

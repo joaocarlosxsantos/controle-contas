@@ -33,15 +33,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
-        <header className="w-full border-b border-border bg-background/80 backdrop-blur sticky top-0 z-30 shadow-sm">
-          <div className="container mx-auto flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3 px-4">
-            <div className="flex flex-1 items-center justify-center sm:justify-start">
-              <h1 className="text-2xl font-extrabold tracking-tight text-blue-700 dark:text-blue-300 drop-shadow-sm select-none">Controle de Contas</h1>
+  <header className="w-full border-b border-border bg-background backdrop-blur sticky top-0 z-30 shadow-sm">
+          <div className="container mx-auto flex items-center justify-between py-3 px-4 gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight text-blue-700 dark:text-blue-300 drop-shadow-sm select-none truncate">Controle de Contas</h1>
             </div>
-            <div className="flex flex-1 items-center justify-center sm:justify-center mt-2 sm:mt-0">
+            <div className="flex-1 flex items-center justify-center">
               <NavMenu />
             </div>
-            <div className="flex flex-1 items-center justify-center sm:justify-end mt-2 sm:mt-0">
+            <div className="flex items-center justify-end">
               <ThemeSwitch />
             </div>
           </div>

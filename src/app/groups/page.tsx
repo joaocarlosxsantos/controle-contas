@@ -91,23 +91,38 @@ export default function GroupsPage() {
 
 
   return (
-    <main className="w-full max-w-7xl mx-auto px-2 md:px-8 py-10 flex flex-col gap-12">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8 mb-10">
-        <h2 className="text-4xl font-extrabold text-blue-900 dark:text-blue-100">Grupos</h2>
-        <button
-          onClick={() => setCreateModalOpen(true)}
-          className="rounded-2xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400 dark:focus:ring-blue-300"
-        >
-          Criar grupo
-        </button>
-      </div>
+    <div className="flex flex-col gap-12 w-full max-w-7xl mx-auto">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 rounded-3xl border border-neutral-200/70 bg-white p-6 md:p-10 shadow-xl dark:border-neutral-800 dark:bg-neutral-900/80">
+        <div className="flex-1 min-w-0 md:min-w-[260px]">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-blue-900 dark:text-blue-100 mb-2">Grupos</h1>
+          <p className="max-w-2xl text-base text-neutral-600 dark:text-neutral-400">Crie e edite os grupos que irão agrupar suas contas e membros.</p>
+        </div>
+        <div className="flex flex-col gap-4 md:gap-6 md:w-auto md:items-center">
+          <div className="flex items-center rounded-2xl border border-neutral-300 bg-white px-4 py-2 text-lg shadow-md focus-within:ring-2 focus-within:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-800 min-w-0 md:min-w-[320px]">
+            <input
+              placeholder="Buscar grupo..."
+              value={""}
+              onChange={() => {}}
+              className="w-full bg-transparent outline-none placeholder:text-neutral-400 dark:placeholder:text-neutral-500 text-lg"
+            />
+          </div>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setCreateModalOpen(true)}
+              className="rounded-2xl bg-blue-600 px-6 py-3 text-lg font-bold text-white shadow transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400 dark:focus:ring-blue-300"
+            >
+              Criar grupo
+            </button>
+          </div>
+        </div>
+      </header>
       {loading && <LoadingSpinner />}
       {error && <p className="text-lg text-red-600 dark:text-red-400 mb-6">{error}</p>}
-      <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {groups.map(group => (
           <div
             key={group.id}
-            className="rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-950/40 dark:border-blue-800 p-8 cursor-pointer hover:shadow-2xl hover:scale-[1.03] transition-all group flex flex-col gap-4 min-h-[220px]"
+            className="rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-950/40 dark:border-blue-800 p-6 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all group flex flex-col gap-3 min-h-[180px]"
             onClick={() => {
               setEditGroup(group);
               setEditName(group.name);
@@ -170,6 +185,6 @@ export default function GroupsPage() {
         </form>
         {editGroup && <MembersList groupId={editGroup.id} />}
       </Modal>
-    </main>
+  </div>
   );
 }
