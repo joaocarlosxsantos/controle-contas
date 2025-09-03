@@ -160,13 +160,21 @@ export function MembersList({ groupId, showForm = true, compact = false }: Membe
       {loading && <p className="text-blue-600 dark:text-blue-400">Carregando...</p>}
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
       {compact ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2">
           {members.length === 0 && <span className="text-xs text-neutral-500 dark:text-neutral-400">Nenhum membro cadastrado.</span>}
           {members.map(m => (
-            <span key={m.id} className="inline-flex flex-col rounded-full bg-blue-100 dark:bg-blue-800 px-3 py-2 text-sm font-semibold text-blue-800 dark:text-blue-100 min-w-[90px] md:min-w-[110px]">
-              <span className="leading-tight text-sm md:text-base truncate">{m.name}</span>
-              <span className="text-xs md:text-base text-neutral-500 dark:text-neutral-300 leading-tight">{maskPhone(m.phone)}</span>
-            </span>
+            <div key={m.id} className="w-full flex items-center gap-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 px-3 py-2">
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-base md:text-lg text-neutral-900 dark:text-neutral-100 truncate">{m.name}</div>
+                <div className="text-sm md:text-base text-neutral-500 dark:text-neutral-300 mt-0.5">{maskPhone(m.phone)}</div>
+              </div>
+              {showForm && (
+                <button
+                  onClick={() => handleDelete(m.id)}
+                  className="ml-3 rounded px-3 py-1 text-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-red-500 dark:hover:bg-red-400"
+                >Remover</button>
+              )}
+            </div>
           ))}
         </div>
       ) : (
@@ -174,8 +182,8 @@ export function MembersList({ groupId, showForm = true, compact = false }: Membe
           {members.length === 0 && <li className="text-xs text-neutral-500 dark:text-neutral-400">Nenhum membro cadastrado.</li>}
           {members.map(m => (
             <li key={m.id} className="flex flex-col rounded bg-neutral-100 dark:bg-neutral-800 px-4 py-3">
-              <span className="font-semibold text-base md:text-lg text-neutral-900 dark:text-neutral-100">{m.name}</span>
-              <span className="text-sm md:text-base text-neutral-600 dark:text-neutral-300 mt-1">{maskPhone(m.phone)}</span>
+              <span className="font-semibold text-lg md:text-xl text-neutral-900 dark:text-neutral-100">{m.name}</span>
+              <span className="text-base md:text-lg text-neutral-600 dark:text-neutral-300 mt-1">{maskPhone(m.phone)}</span>
               {showForm && (
                 <button
                   onClick={() => handleDelete(m.id)}

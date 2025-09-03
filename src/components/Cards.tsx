@@ -1,4 +1,4 @@
-import { UserGroupIcon, PhoneIcon, ReceiptPercentIcon } from "@heroicons/react/24/outline";
+import { ReceiptPercentIcon } from "@heroicons/react/24/outline";
 import React from "react";
 
 interface BaseCardProps {
@@ -14,12 +14,25 @@ function BaseCard({ onClick, children, variant = "neutral" }: BaseCardProps) {
     neutral: "from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 border-neutral-200 dark:border-neutral-700",
   }[variant];
 
+  const isClickable = typeof onClick === 'function';
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!isClickable) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick!();
+    }
+  };
+
   return (
     <div
       onClick={onClick}
-      className={`group relative flex flex-col gap-3 overflow-hidden rounded-xl border bg-gradient-to-br p-4 transition-all ${variantClasses} card-shadow`}
+      onKeyDown={handleKeyDown}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      className={`group relative flex flex-col gap-3 overflow-hidden rounded-xl border bg-gradient-to-br p-4 transition-all ${variantClasses} card-shadow ${isClickable ? 'clickable' : ''}`}
     >
-  <div className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.6),transparent_60%)] dark:bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.08),transparent_70%)]" />
+      <div className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.6),transparent_60%)] dark:bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.08),transparent_70%)]" />
       {children}
     </div>
   );
@@ -29,13 +42,9 @@ export function GroupCard({ name, phone, onClick }: { name: string; phone: strin
   return (
     <BaseCard onClick={onClick} variant="blue">
       <div className="flex items-center gap-3 w-full">
-        <div className="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-xl bg-blue-200/70 dark:bg-blue-900/40">
-          <UserGroupIcon className="h-7 w-7 text-blue-700 dark:text-blue-300" />
-        </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-base md:text-lg text-blue-900 dark:text-blue-200 line-clamp-1">{name}</div>
-          <div className="mt-0.5 flex items-center gap-2 text-xs md:text-sm text-blue-700 dark:text-blue-300">
-            <PhoneIcon className="h-4 w-4" />
+          <div className="font-semibold text-lg md:text-2xl text-blue-900 dark:text-blue-200 line-clamp-1">{name}</div>
+          <div className="mt-0.5 text-sm md:text-base text-blue-700 dark:text-blue-300">
             <span className="truncate">{phone}</span>
           </div>
         </div>
@@ -53,8 +62,8 @@ export function BillCard({ name, value, onClick, children }: { name: string; val
           <ReceiptPercentIcon className="h-7 w-7 text-emerald-700 dark:text-emerald-300" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-base md:text-lg text-emerald-900 dark:text-emerald-200 line-clamp-1">{name}</div>
-          <div className={`mt-0.5 text-xs md:text-sm ${value < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-300'}`}>
+          <div className="font-semibold text-lg md:text-2xl text-emerald-900 dark:text-emerald-200 line-clamp-1">{name}</div>
+          <div className={`mt-0.5 text-sm md:text-lg ${value < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-300'}`}>
             R$ {value < 0 ? `-${Math.abs(value).toFixed(2)}` : value.toFixed(2)}
           </div>
         </div>

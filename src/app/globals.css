@@ -48,6 +48,31 @@ body {
   box-shadow: var(--card-shadow);
 }
 
+/* Indicar visualmente que elementos clicáveis são interativos */
+/* Aplica cursor pointer e uma leve elevação/transform no hover para elementos que atuam como botões */
+.clickable,
+[role="button"] {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hover / focus interaction applied to interactive controls (buttons, links, clickable cards) */
+.clickable:hover,
+[role="button"]:hover,
+.clickable:focus,
+[role="button"]:focus {
+  transform: translateY(-4px);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+  outline: none;
+}
+
+/* Ensure keyboard focus is visible */
+[role="button"]:focus-visible,
+.clickable:focus-visible {
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

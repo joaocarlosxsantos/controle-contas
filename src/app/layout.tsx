@@ -2,6 +2,7 @@ import React from "react";
 import "./globals.css";
 import { NavMenu } from "@/components/NavMenu";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
+import { ToastProvider } from "@/components/Toast";
 
 export const metadata = {
   title: "Controle de Contas",
@@ -47,7 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main className="container mx-auto px-4 py-8 flex-1 flex flex-col gap-8">
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </main>
       </body>
     </html>

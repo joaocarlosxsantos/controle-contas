@@ -118,7 +118,7 @@ export default function Home() {
             <div className="mt-1 text-3xl font-bold text-emerald-600 dark:text-emerald-400">R$ {total.toFixed(2)}</div>
           </div>
           <div className="flex-1 min-w-[220px] rounded-3xl border border-neutral-200 bg-white px-8 py-6 text-lg shadow-md dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="text-sm uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Filtradas</div>
+            <div className="text-sm uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Contas</div>
             <div className="mt-1 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{filtered.length}</div>
           </div>
         </div>
@@ -164,10 +164,16 @@ export default function Home() {
             return (
               <div
                 key={groupId}
-                className="rounded-2xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/30 p-6 md:p-8 cursor-pointer hover:shadow-2xl transition flex flex-col gap-4 min-h-[220px] md:min-h-[260px]"
-                onClick={() => window.location.href = `/bills?groupId=${groupId}`}
-                tabIndex={0}
                 role="button"
+                tabIndex={0}
+                onClick={() => window.location.href = `/bills?groupId=${groupId}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    window.location.href = `/bills?groupId=${groupId}`;
+                  }
+                }}
+                className="rounded-2xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-900/30 p-6 md:p-8 cursor-pointer hover:shadow-2xl transition flex flex-col gap-4 min-h-[220px] md:min-h-[260px] clickable"
               >
                 <h3 className="mb-2 text-2xl font-bold text-emerald-800 dark:text-emerald-200">{groupData.name}</h3>
                 <div className="flex flex-col gap-1 text-emerald-900 dark:text-emerald-200 text-lg font-medium">
