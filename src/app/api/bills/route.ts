@@ -2,7 +2,8 @@
 export async function PUT(req: NextRequest) {
   const data = await req.json();
   const { id, name, value, shares } = data;
-  if (!id || !name || !value) {
+  // permitir value = 0 ou negativo, então verificar apenas null/undefined
+  if (id === undefined || id === null || !name || value === undefined || value === null) {
     return NextResponse.json({ error: 'Campos obrigatórios: id, name, value' }, { status: 400 });
   }
 
@@ -10,7 +11,7 @@ export async function PUT(req: NextRequest) {
   let bill;
   if (Array.isArray(shares) && shares.length > 0) {
     for (const s of shares) {
-      if (!s.memberId || !s.type || typeof s.amount !== 'number') {
+      if (s.memberId === undefined || s.memberId === null || !s.type || typeof s.amount !== 'number') {
         return NextResponse.json({ error: 'Cada divisão deve ter memberId, type e amount' }, { status: 400 });
       }
     }
@@ -78,7 +79,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const data = await req.json();
   const { groupId, name, value, shares } = data;
-  if (!groupId || !name || !value) {
+  // permitir value = 0 ou negativo, então verificar apenas null/undefined
+  if (groupId === undefined || groupId === null || !name || value === undefined || value === null) {
     return NextResponse.json({ error: 'Campos obrigatórios: groupId, name, value' }, { status: 400 });
   }
 
@@ -87,7 +89,7 @@ export async function POST(req: NextRequest) {
   if (Array.isArray(shares) && shares.length > 0) {
     // Validação básica: todos os shares devem ter memberId, type e amount
     for (const s of shares) {
-      if (!s.memberId || !s.type || typeof s.amount !== 'number') {
+      if (s.memberId === undefined || s.memberId === null || !s.type || typeof s.amount !== 'number') {
         return NextResponse.json({ error: 'Cada divisão deve ter memberId, type e amount' }, { status: 400 });
       }
     }

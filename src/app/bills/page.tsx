@@ -378,7 +378,6 @@ export default function BillsPage() {
             value={editValue}
             onChange={e => setEditValue(e.target.value)}
             required
-            min="0"
             step="0.01"
             className="rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-neutral-900 dark:text-neutral-100"
             placeholder="Valor"
@@ -458,7 +457,7 @@ export default function BillsPage() {
                       <span className="w-32 truncate">{member?.name}</span>
                       <input
                         type="number"
-                        min="0"
+                        min={editShareType === 'percent' ? '0' : undefined}
                         step="0.01"
                         value={share?.amount ?? 0}
                         onChange={e => {
@@ -597,7 +596,6 @@ export default function BillsPage() {
                 value={value}
                 onChange={e => setValue(e.target.value)}
                 required
-                min="0"
                 step="0.01"
                 className="rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600"
               />
@@ -676,7 +674,7 @@ export default function BillsPage() {
                           <span className="w-32 truncate">{member?.name}</span>
                           <input
                             type="number"
-                            min="0"
+                            min={shareType === 'percent' ? '0' : undefined}
                             step="0.01"
                             value={share?.amount ?? 0}
                             onChange={e => {

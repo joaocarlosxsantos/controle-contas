@@ -50,7 +50,9 @@ export function BillCard({ name, value, onClick, children }: { name: string; val
       </div>
       <div className="relative z-10 flex-1">
         <div className="font-semibold text-base md:text-lg text-emerald-900 dark:text-emerald-200 line-clamp-1">{name}</div>
-        <div className="mt-0.5 text-xs md:text-sm text-emerald-700 dark:text-emerald-300">R$ {value.toFixed(2)}</div>
+        <div className={`mt-0.5 text-xs md:text-sm ${value < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-300'}`}>
+          R$ {value < 0 ? `-${Math.abs(value).toFixed(2)}` : value.toFixed(2)}
+        </div>
       </div>
       <div className="relative z-10 text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-400 md:text-xs">Detalhes</div>
       {children && <div className="relative z-10 ml-4 flex items-center">{children}</div>}
