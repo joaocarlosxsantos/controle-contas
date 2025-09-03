@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
 interface ModalProps {
   open: boolean;
@@ -17,6 +17,7 @@ const sizeClass = {
 };
 
 export function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     function handleEsc(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -26,6 +27,20 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
       previousActive = document.activeElement;
       document.addEventListener("keydown", handleEsc);
       document.body.style.overflow = "hidden";
+      // set focus to first focusable element inside the modal (or the dialog container)
+      requestAnimationFrame(() => {
+        try {
+          const el = containerRef.current;
+          if (!el) return;
+          const focusable = el.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length) focusable[0].focus();
+          else el.focus();
+        } catch {
+          // ignore
+        }
+      });
     }
     return () => {
       document.removeEventListener("keydown", handleEsc);
@@ -46,8 +61,10 @@ export function Modal({ open, onClose, title, children, size = "md" }: ModalProp
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div
+        ref={containerRef}
         role="dialog"
         aria-modal="true"
+        tabIndex={-1}
         className={`relative w-full ${sizeClass[size]} animate-in fade-in zoom-in rounded-2xl border border-neutral-200 bg-white shadow-lg dark:border-neutral-800 dark:bg-neutral-900 max-h-[90vh] overflow-hidden ring-1 ring-transparent focus:outline-none`}
       >
         <div className="flex items-center gap-4 px-6 py-4 border-b border-transparent dark:border-neutral-800">
