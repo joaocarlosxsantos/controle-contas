@@ -162,7 +162,7 @@ export default function GroupsPage() {
                   <div className="font-semibold text-lg text-neutral-900 dark:text-neutral-100 line-clamp-1">
                     {group.name}
                   </div>
-                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                  <div className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                     Criado em{" "}
                     {new Date(group.createdAt).toLocaleDateString("pt-BR")}
                   </div>

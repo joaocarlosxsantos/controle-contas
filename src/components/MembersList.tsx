@@ -161,7 +161,7 @@ export function MembersList({ groupId, showForm = true, compact = false }: Membe
       {error && <p className="text-red-600 dark:text-red-400">{error}</p>}
       {compact ? (
         <div className="flex flex-col gap-2">
-          {members.length === 0 && <span className="text-xs text-neutral-500 dark:text-neutral-400">Nenhum membro cadastrado.</span>}
+          {members.length === 0 && <span className="text-sm text-neutral-500 dark:text-neutral-400">Nenhum membro cadastrado.</span>}
           {members.map(m => (
             <div key={m.id} className="w-full flex items-center gap-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 px-3 py-2">
               <div className="flex-1 min-w-0">
@@ -179,7 +179,7 @@ export function MembersList({ groupId, showForm = true, compact = false }: Membe
         </div>
       ) : (
         <ul className="mb-2 space-y-2">
-          {members.length === 0 && <li className="text-xs text-neutral-500 dark:text-neutral-400">Nenhum membro cadastrado.</li>}
+          {members.length === 0 && <li className="text-sm text-neutral-500 dark:text-neutral-400">Nenhum membro cadastrado.</li>}
           {members.map(m => (
             <li key={m.id} className="flex flex-col rounded bg-neutral-100 dark:bg-neutral-800 px-4 py-3">
               <span className="font-semibold text-lg md:text-xl text-neutral-900 dark:text-neutral-100">{m.name}</span>
@@ -187,7 +187,7 @@ export function MembersList({ groupId, showForm = true, compact = false }: Membe
               {showForm && (
                 <button
                   onClick={() => handleDelete(m.id)}
-                  className="mt-2 self-end rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-red-500 dark:hover:bg-red-400 dark:focus:ring-red-300"
+                  className="mt-2 self-end rounded bg-red-600 px-2 py-1 text-sm text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 dark:bg-red-500 dark:hover:bg-red-400 dark:focus:ring-red-300"
                 >
                   Remover
                 </button>

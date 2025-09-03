@@ -48,7 +48,7 @@ export function GroupCard({ name, phone, onClick }: { name: string; phone: strin
             <span className="truncate">{phone}</span>
           </div>
         </div>
-        <div className="text-[10px] font-medium uppercase tracking-wide text-blue-600 dark:text-blue-400 md:text-xs">Ver detalhes →</div>
+          <div className="text-sm font-medium uppercase tracking-wide text-blue-600 dark:text-blue-400 md:text-xs">Ver detalhes →</div>
       </div>
     </BaseCard>
   );

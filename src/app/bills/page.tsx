@@ -109,6 +109,15 @@ export default function BillsPage() {
   // Estado para modal de erro de validação
   const [validationError, setValidationError] = useState("");
   const toast = useToast();
+
+  function formatPhoneForWhatsapp(phone?: string) {
+    if (!phone) return null;
+    const cleaned = phone.replace(/\D/g, "");
+    // assume BR if 10 or 11 digits
+    if (cleaned.length === 10 || cleaned.length === 11) return `55${cleaned}`;
+    // if already includes country code (>=11), return as is
+    return cleaned;
+  }
   // Atualiza shares ao mudar participantes, valor ou tipo (edição)
   // Só recalcula shares de edição se o usuário alterar algo DEPOIS de abrir o modal
   useEffect(() => {
@@ -403,7 +412,17 @@ export default function BillsPage() {
       )}
       {selectedGroup && (
         <>
-          <ul className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex flex-col sm:flex-row">
+            <button
+              className="rounded-2xl bg-emerald-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:focus:ring-emerald-300"
+              onClick={handleOpenAddModal}
+            >
+              Adicionar conta
+            </button>
+        </div>
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
+          
+          <ul className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
             {bills.map((bill) => (
               <li key={bill.id} className="">
                 <BillCard
@@ -412,7 +431,7 @@ export default function BillsPage() {
                   onClick={() => handleOpenEditModal(bill)}
                 >
                   {bill.shares && bill.shares.length > 0 && (
-                    <div className="flex flex-col gap-1 text-xs text-emerald-900 dark:text-emerald-200 ml-4">
+                    <div className="flex flex-col gap-1 text-sm text-emerald-900 dark:text-emerald-200 ml-4">
                       {bill.shares.map((share) => {
                         const member = members.find(
                           (m) => m.id === share.memberId
@@ -435,6 +454,7 @@ export default function BillsPage() {
                                 ({share.amount.toFixed(1)}%)
                               </span>
                             )}
+                            {/* WhatsApp buttons removed from individual bill view (moved to subtotal area) */}
                           </div>
                         );
                       })}
@@ -665,7 +685,7 @@ export default function BillsPage() {
                               }
                             />
                             {editShareType === "value" && editValue && (
-                              <span className="text-xs text-neutral-500">
+                              <span className="text-sm text-neutral-500">
                                 (
                                 {(
                                   ((share?.amount ?? 0) /
@@ -676,7 +696,7 @@ export default function BillsPage() {
                               </span>
                             )}
                             {editShareType === "percent" && editValue && (
-                              <span className="text-xs text-neutral-500">
+                              <span className="text-sm text-neutral-500">
                                 (R${" "}
                                 {(
                                   ((share?.amount ?? 0) *
@@ -794,9 +814,9 @@ export default function BillsPage() {
 
             {/* antigo modal de exclusão removido - confirmação agora acontece dentro do modal de edição */}
           </ul>
-
+          
           {/* Subtotal e divisão */}
-          <div className="mb-10 rounded-3xl bg-emerald-50 dark:bg-emerald-900/30 p-8 flex flex-col gap-4 border border-emerald-200 dark:border-emerald-800 shadow-md">
+          <div className="mb-6 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 p-8 flex flex-col gap-4 border border-emerald-200 dark:border-emerald-800 shadow-md">
             <div className="text-emerald-900 dark:text-emerald-200 text-xl font-bold">
               Subtotal:{" "}
               <span className="font-extrabold">
@@ -806,18 +826,6 @@ export default function BillsPage() {
             <div className="text-emerald-900 dark:text-emerald-200 text-xl font-bold">
               Pessoas no grupo:{" "}
               <span className="font-extrabold">{members.length}</span>
-            </div>
-            <div className="text-emerald-900 dark:text-emerald-200 text-xl font-bold">
-              Total por pessoa (média):{" "}
-              <span className="font-extrabold">
-                R${" "}
-                {members.length > 0
-                  ? (
-                      bills.reduce((acc, b) => acc + b.value, 0) /
-                      members.length
-                    ).toFixed(2)
-                  : "0.00"}
-              </span>
             </div>
             {/* Totais por membro */}
             {members.length > 0 && (
@@ -851,21 +859,96 @@ export default function BillsPage() {
                       >
                         <span className="font-semibold">{member.name}:</span>
                         <span>R$ {total.toFixed(2)}</span>
+                        {/* botão enviar cobrança por membro (WhatsApp ou copiar) */}
+                        {member.phone ? (
+                          <a
+                            className="ml-auto inline-flex items-center rounded px-2 py-1 bg-green-600 text-white text-sm hover:bg-green-700"
+                            href={`https://wa.me/${formatPhoneForWhatsapp(member.phone)}?text=${encodeURIComponent((() => {
+                              const lines: string[] = [];
+                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do grupo ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
+                              bills.forEach(b => {
+                                let memberVal = 0;
+                                if (b.shares && b.shares.length > 0) {
+                                  const s = b.shares.find(ss => ss.memberId === member.id);
+                                  if (s) {
+                                    memberVal = s.type === 'percent' ? (s.amount * b.value) / 100 : s.amount;
+                                  }
+                                } else {
+                                  memberVal = b.value / Math.max(members.length, 1);
+                                }
+                                if (memberVal > 0) lines.push(`${b.name}: R$ ${memberVal.toFixed(2)}`);
+                              });
+                              const totalStr = bills.reduce((acc, b) => {
+                                let mv = 0;
+                                if (b.shares && b.shares.length > 0) {
+                                  const s = b.shares.find(ss => ss.memberId === member.id);
+                                  if (s) mv = s.type === 'percent' ? (s.amount * b.value) / 100 : s.amount;
+                                } else {
+                                  mv = b.value / Math.max(members.length, 1);
+                                }
+                                return acc + mv;
+                              }, 0);
+                              lines.push(`Total: R$ ${totalStr.toFixed(2)}`);
+                              return lines.join('\n');
+                            })())}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`Enviar cobrança detalhada para ${member.name} via WhatsApp`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5">
+                              <path fill="currentColor" d="M20.52 3.48A11.92 11.92 0 0012 0C5.373 0 .002 5.373 0 12c0 2.116.552 4.132 1.6 5.94L0 24l6.29-1.645A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12 0-3.2-1.246-6.2-3.48-8.52zM12 21.5c-1.32 0-2.613-.334-3.75-.966l-.27-.16-3.74.979.98-3.64-.165-.28A9.5 9.5 0 1121.5 12 9.5 9.5 0 0112 21.5z"/>
+                              <path fill="#fff" d="M17.6 14.41c-.27-.14-1.6-.79-1.85-.88-.25-.09-.43-.14-.61.14-.18.27-.7.88-.86 1.06-.16.18-.32.2-.59.07-.27-.14-1.14-.42-2.17-1.34-.8-.71-1.34-1.6-1.5-1.87-.16-.27-.02-.42.12-.56.12-.12.27-.32.41-.48.14-.16.19-.27.29-.45.09-.18.05-.34-.02-.48-.07-.14-.61-1.48-.84-2.04-.22-.53-.45-.46-.61-.47l-.52-.01c-.18 0-.47.07-.72.34-.26.27-.99.97-.99 2.37 0 1.4 1.02 2.76 1.16 2.95.14.18 2.01 3.06 4.87 4.3 2.73 1.18 2.73.79 3.22.74.49-.05 1.6-.65 1.83-1.29.23-.64.23-1.19.16-1.29-.07-.1-.25-.15-.52-.29z"/>
+                            </svg>
+                          </a>
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              const lines: string[] = [];
+                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do grupo ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
+                              bills.forEach(b => {
+                                let memberVal = 0;
+                                if (b.shares && b.shares.length > 0) {
+                                  const s = b.shares.find(ss => ss.memberId === member.id);
+                                  if (s) memberVal = s.type === 'percent' ? (s.amount * b.value) / 100 : s.amount;
+                                } else {
+                                  memberVal = b.value / Math.max(members.length, 1);
+                                }
+                                if (memberVal > 0) lines.push(`${b.name}: R$ ${memberVal.toFixed(2)}`);
+                              });
+                              const totalStr = bills.reduce((acc, b) => {
+                                let mv = 0;
+                                if (b.shares && b.shares.length > 0) {
+                                  const s = b.shares.find(ss => ss.memberId === member.id);
+                                  if (s) mv = s.type === 'percent' ? (s.amount * b.value) / 100 : s.amount;
+                                } else {
+                                  mv = b.value / Math.max(members.length, 1);
+                                }
+                                return acc + mv;
+                              }, 0);
+                              lines.push(`Total: R$ ${totalStr.toFixed(2)}`);
+                              const msg = lines.join('\n');
+                              try {
+                                await navigator.clipboard.writeText(msg);
+                                toast.success({ message: 'Mensagem copiada para a área de transferência' });
+                              } catch {
+                                toast.error({ message: 'Não foi possível copiar a mensagem' });
+                              }
+                            }}
+                            className="ml-auto inline-flex items-center rounded px-2 py-1 bg-neutral-200 text-neutral-800 text-sm hover:bg-neutral-300"
+                            aria-label={`Copiar mensagem detalhada para ${member.name}`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5">
+                              <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                            </svg>
+                          </button>
+                        )}
                       </div>
                     );
                   })}
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 mb-10">
-            <button
-              className="rounded-2xl bg-emerald-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:focus:ring-emerald-300"
-              onClick={handleOpenAddModal}
-            >
-              Adicionar conta
-            </button>
+            <hr className="my-6 border-neutral-200 dark:border-neutral-700" />
             <button
               className="rounded-2xl bg-blue-600 px-8 py-4 text-lg font-bold text-white shadow-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-blue-500 dark:hover:bg-blue-400 dark:focus:ring-blue-300"
               onClick={async () => {
@@ -899,8 +982,8 @@ export default function BillsPage() {
               Exportar CSV
             </button>
           </div>
-          <hr className="my-6 border-neutral-200 dark:border-neutral-700" />
 
+        </div>
           {/* Modal de cadastro de conta */}
           <Modal
             open={addModalOpen}
@@ -1035,7 +1118,7 @@ export default function BillsPage() {
                             placeholder={shareType === "value" ? "Valor" : "%"}
                           />
                           {shareType === "value" && value && (
-                            <span className="text-xs text-neutral-500">
+                            <span className="text-sm text-neutral-500">
                               (
                               {(
                                 ((share?.amount ?? 0) / parseFloat(value)) *
@@ -1045,7 +1128,7 @@ export default function BillsPage() {
                             </span>
                           )}
                           {shareType === "percent" && value && (
-                            <span className="text-xs text-neutral-500">
+                            <span className="text-sm text-neutral-500">
                               (R${" "}
                               {(
                                 ((share?.amount ?? 0) * parseFloat(value)) /
@@ -1054,6 +1137,7 @@ export default function BillsPage() {
                               )
                             </span>
                           )}
+                          {/* WhatsApp/copiar removidos do modal de adicionar conta; mensagens agora enviadas pela área de subtotal */}
                         </div>
                       );
                     })}
