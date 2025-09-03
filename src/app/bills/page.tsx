@@ -865,7 +865,7 @@ export default function BillsPage() {
                             className="ml-auto inline-flex items-center rounded px-2 py-1 bg-green-600 text-white text-sm hover:bg-green-700"
                             href={`https://wa.me/${formatPhoneForWhatsapp(member.phone)}?text=${encodeURIComponent((() => {
                               const lines: string[] = [];
-                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do grupo ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
+                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do(a) ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
                               bills.forEach(b => {
                                 let memberVal = 0;
                                 if (b.shares && b.shares.length > 0) {
@@ -876,7 +876,7 @@ export default function BillsPage() {
                                 } else {
                                   memberVal = b.value / Math.max(members.length, 1);
                                 }
-                                if (memberVal > 0) lines.push(`${b.name}: R$ ${memberVal.toFixed(2)}`);
+                                if (memberVal > 0) lines.push(`- ${b.name}: R$ ${memberVal.toFixed(2)}`);
                               });
                               const totalStr = bills.reduce((acc, b) => {
                                 let mv = 0;
@@ -904,7 +904,7 @@ export default function BillsPage() {
                           <button
                             onClick={async () => {
                               const lines: string[] = [];
-                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do grupo ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
+                              lines.push(`Olá ${member.name}, tudo bem? Aqui estão suas cobranças do(a) ${groups.find(g => g.id === selectedGroup)?.name || ''}:`);
                               bills.forEach(b => {
                                 let memberVal = 0;
                                 if (b.shares && b.shares.length > 0) {
@@ -913,7 +913,7 @@ export default function BillsPage() {
                                 } else {
                                   memberVal = b.value / Math.max(members.length, 1);
                                 }
-                                if (memberVal > 0) lines.push(`${b.name}: R$ ${memberVal.toFixed(2)}`);
+                                if (memberVal > 0) lines.push(`- ${b.name}: R$ ${memberVal.toFixed(2)}`);
                               });
                               const totalStr = bills.reduce((acc, b) => {
                                 let mv = 0;
